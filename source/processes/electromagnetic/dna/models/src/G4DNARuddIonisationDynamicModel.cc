@@ -47,6 +47,7 @@
 #include "G4ExtendedPhysicsVector.hh"
 #include "G4EmParameters.hh"
 #include "G4NistManager.hh"
+#include "G4AutoLock.hh"
 
 #include "G4IonTable.hh"
 #include "G4DNARuddAngle.hh"
@@ -76,6 +77,8 @@ namespace
   // Following values provided by M. Dingfelder (priv. comm)
   const G4double Bj[5] = {12.60*CLHEP::eV, 14.70*CLHEP::eV, 18.40*CLHEP::eV,
                           32.20*CLHEP::eV, 539*CLHEP::eV};
+
+  G4Mutex ruddDataMutex = G4MUTEX_INITIALIZER;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -95,9 +98,11 @@ G4DNARuddIonisationDynamicModel::G4DNARuddIonisationDynamicModel(const G4Particl
   // Define default angular generator
   SetAngularDistribution(new G4DNARuddAngle());
 
-  if (nullptr == xsdata_p) {
-    isFirst = true;
-    LoadData();
+  if (nullptr == xsdata_p) {             // outer check (no lock)
+    G4AutoLock lock(&ruddDataMutex);
+    if (nullptr == xsdata_p) {           // DCLP inner check
+      LoadData();
+    }
   }
 }
 
@@ -105,13 +110,9 @@ G4DNARuddIonisationDynamicModel::G4DNARuddIonisationDynamicModel(const G4Particl
 
 G4DNARuddIonisationDynamicModel::~G4DNARuddIonisationDynamicModel()
 {  
-  if (isFirst) {
-    delete xsdata_alpha;
-    delete xsdata_alphap;
-    delete xsdata_p;
-    delete xsdata_hydrogen;
-    delete xsdata_helium;
-  }
+  // Static data (xsdata_*) live for the process lifetime; no per-instance
+  // delete needed. Original code also left dangling pointers (no nullptr
+  // assignment after delete), which is fixed by removing the delete entirely.
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

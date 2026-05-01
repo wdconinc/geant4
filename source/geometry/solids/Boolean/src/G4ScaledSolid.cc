@@ -479,8 +479,16 @@ G4Polyhedron* G4ScaledSolid::GetPolyhedron () const
       fpPolyhedron->GetNumberOfRotationStepsAtTimeOfCreation() !=
       fpPolyhedron->GetNumberOfRotationSteps())
     {
-      fpPolyhedron = CreatePolyhedron();
-      fRebuildPolyhedron = false;
+      G4RecursiveAutoLock l(&scaledMutex);
+      if (fpPolyhedron == nullptr ||
+          fRebuildPolyhedron ||
+          fpPolyhedron->GetNumberOfRotationStepsAtTimeOfCreation() !=
+          fpPolyhedron->GetNumberOfRotationSteps())
+        {
+          delete fpPolyhedron;
+          fpPolyhedron = CreatePolyhedron();
+          fRebuildPolyhedron = false;
+        }
     }
   return fpPolyhedron;
 }

@@ -54,6 +54,7 @@
 
 #include "G4LossTableBuilder.hh"
 #include "G4SystemOfUnits.hh"
+#include <mutex>
 #include "G4PhysicsTable.hh"
 #include "G4PhysicsLogVector.hh"
 #include "G4PhysicsTableHelper.hh"
@@ -72,18 +73,22 @@ std::vector<G4int>* G4LossTableBuilder::theDensityIdx = nullptr;
 std::vector<G4bool>* G4LossTableBuilder::theFlag = nullptr;
 std::vector<G4bool>* G4LossTableBuilder::theFluct = nullptr;
 
+namespace {
+  std::once_flag sVectorsOnce;
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4LossTableBuilder::G4LossTableBuilder(G4bool master)
   : isInitializer(master)
 {
   theParameters = G4EmParameters::Instance();
-  if (nullptr == theFlag) {
+  std::call_once(sVectorsOnce, []() {
     theDensityFactor = new std::vector<G4double>;
     theDensityIdx = new std::vector<G4int>;
     theFlag = new std::vector<G4bool>;
     theFluct = new std::vector<G4bool>;
-  }
+  });
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

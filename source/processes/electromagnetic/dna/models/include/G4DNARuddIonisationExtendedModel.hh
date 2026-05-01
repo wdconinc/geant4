@@ -46,6 +46,7 @@
 #include "G4DNAWaterIonisationStructure.hh"
 #include "G4VAtomDeexcitation.hh"
 #include "G4NistManager.hh"
+#include <mutex>
 #include <vector>
 
 class G4DNARuddIonisationExtendedModel : public G4VEmModel
@@ -131,6 +132,8 @@ private:
   static G4DNACrossSectionDataSet* xsdata[RUDDZMAX];
   static G4DNACrossSectionDataSet* xsalphaplus;
   static G4DNACrossSectionDataSet* xshelium;
+  static std::once_flag fDataOnce;
+  static void CleanupStaticData();
 
   // Water density table
   static const std::vector<G4double>* fpWaterDensity;
@@ -169,7 +172,6 @@ private:
 
   G4bool isInitialised{false};
   G4bool isIon{false};
-  G4bool isFirst{false};
   G4bool isHelium{false};
   G4bool statCode{false};
   G4bool useDNAWaterStructure{true};

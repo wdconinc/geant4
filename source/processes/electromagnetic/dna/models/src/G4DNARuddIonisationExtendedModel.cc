@@ -55,6 +55,7 @@ G4DNACrossSectionDataSet* G4DNARuddIonisationExtendedModel::xsdata[] = {nullptr}
 G4DNACrossSectionDataSet* G4DNARuddIonisationExtendedModel::xshelium = nullptr;
 G4DNACrossSectionDataSet* G4DNARuddIonisationExtendedModel::xsalphaplus = nullptr;
 const std::vector<G4double>* G4DNARuddIonisationExtendedModel::fpWaterDensity = nullptr;
+std::once_flag G4DNARuddIonisationExtendedModel::fDataOnce;
 
 namespace
 {
@@ -84,24 +85,20 @@ G4DNARuddIonisationExtendedModel::G4DNARuddIonisationExtendedModel(const G4Parti
   // Define default angular generator
   SetAngularDistribution(new G4DNARuddAngle());
 
-  if (nullptr == xshelium) { LoadData(); }
+  std::call_once(fDataOnce, &G4DNARuddIonisationExtendedModel::LoadData, this);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4DNARuddIonisationExtendedModel::~G4DNARuddIonisationExtendedModel()
-{  
-  if (isFirst) {
-    for(auto & i : xsdata) { delete i; }
-  }
+{
+  // Static data cleaned up by CleanupStaticData() registered via std::atexit in LoadData()
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void G4DNARuddIonisationExtendedModel::LoadData()
 {
-  // initialisation of static data once
-  isFirst = true;
   G4String filename("dna/sigma_ionisation_h_rudd");
   xsdata[0] = new G4DNACrossSectionDataSet(new G4LogLogInterpolation, CLHEP::eV, scaleFactor);
   xsdata[0]->LoadData(filename);
@@ -158,6 +155,17 @@ void G4DNARuddIonisationExtendedModel::LoadData()
   auto water = G4NistManager::Instance()->FindMaterial("G4_WATER");
   fpWaterDensity =
     G4DNAMolecularMaterial::Instance()->GetNumMolPerVolTableFor(water);
+
+  std::atexit(G4DNARuddIonisationExtendedModel::CleanupStaticData);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void G4DNARuddIonisationExtendedModel::CleanupStaticData()
+{
+  for (auto& p : xsdata) { delete p; p = nullptr; }
+  delete xsalphaplus; xsalphaplus = nullptr;
+  delete xshelium;    xshelium    = nullptr;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

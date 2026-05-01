@@ -1221,13 +1221,7 @@ namespace G4INCL {
      * Pop_back()
      * 
      */
-#ifdef INCLXX_IN_GEANT4_MODE
-      static std::vector<G4double> INCLBiasVector;
-      //static G4VectorCache<G4double> INCLBiasVector;
-#else
       static G4ThreadLocal std::vector<G4double> INCLBiasVector;
-      //static G4VectorCache<G4double> INCLBiasVector;
-#endif
     static G4ThreadLocal G4int nextBiasedCollisionID;
     
   protected:

@@ -517,8 +517,8 @@ G4double G4AdjointCSManager::GetCrossSectionCorrection(
   G4ParticleDefinition* aPartDef, G4double PreStepEkin,
   const G4MaterialCutsCouple* aCouple, G4bool& fwd_is_used)
 {
-  static G4double lastEkin = 0.;
-  static G4ParticleDefinition* lastPartDef;
+  G4ThreadLocal static G4double lastEkin = 0.;
+  G4ThreadLocal static G4ParticleDefinition* lastPartDef = nullptr;
 
   G4double corr_fac = 1.;
   if(fForwardCSMode && aPartDef)

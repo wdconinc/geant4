@@ -101,9 +101,7 @@ private:
   static G4BaryonPartialWidth*    baryonPartialWidth;
   static G4ParticleTypeConverter* particleTypeConverter;
 
-#ifdef G4MULTITHREADED
   static G4Mutex concreteMesonBaryonToResonanceMutex;
-#endif
 };
 
 #endif

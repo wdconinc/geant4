@@ -588,9 +588,9 @@ G4double G4AdjointCSManager::ComputeAdjointCS(
   G4double EminSec = 0.;
   G4double EmaxSec = 0.;
 
-  static G4double lastPrimaryEnergy = 0.;
-  static G4double lastTcut          = 0.;
-  static G4Material* lastMaterial   = nullptr;
+  G4ThreadLocal static G4double lastPrimaryEnergy = 0.;
+  G4ThreadLocal static G4double lastTcut          = 0.;
+  G4ThreadLocal static G4Material* lastMaterial   = nullptr;
 
   if(isScatProjToProj)
   {

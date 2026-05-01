@@ -72,8 +72,6 @@ public:
   std::vector< std::map< std::thread::id, G4double > > random_number_cache;
 
 private:
-  static G4ParticleHPProbabilityTablesStore* instance;
-
   G4ParticleHPProbabilityTablesStore();
   G4ParticleHPProbabilityTablesStore( const G4ParticleHPProbabilityTablesStore& ){};
   ~G4ParticleHPProbabilityTablesStore();

@@ -61,7 +61,7 @@
 #include <string>
 #include <sstream>
 
-G4ParticleHPProbabilityTablesStore* G4ParticleHPProbabilityTablesStore::instance = nullptr;
+
 
 ///--------------------------------------------------------------------------------------
 G4ParticleHPProbabilityTablesStore::G4ParticleHPProbabilityTablesStore() : 
@@ -138,8 +138,8 @@ G4ParticleHPProbabilityTablesStore::~G4ParticleHPProbabilityTablesStore() {
 
 ///--------------------------------------------------------------------------------------
 G4ParticleHPProbabilityTablesStore* G4ParticleHPProbabilityTablesStore::GetInstance() {
-  if ( instance == nullptr ) instance = new G4ParticleHPProbabilityTablesStore;
-  return instance;
+  static G4ParticleHPProbabilityTablesStore theInstance;
+  return &theInstance;
 }
 
 ///--------------------------------------------------------------------------------------

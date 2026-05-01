@@ -107,6 +107,7 @@ G4double G4EmCorrections::sWmaxBarkas = 10.0;
 G4PhysicsFreeVector* G4EmCorrections::sBarkasCorr = nullptr;
 G4PhysicsFreeVector* G4EmCorrections::sThetaK = nullptr;
 G4PhysicsFreeVector* G4EmCorrections::sThetaL = nullptr;
+std::once_flag G4EmCorrections::fCorrOnce;
 
 G4EmCorrections::G4EmCorrections(G4int verb)
   : verbose(verb)
@@ -118,11 +119,13 @@ G4EmCorrections::G4EmCorrections(G4int verb)
   ionTable = G4ParticleTable::GetParticleTable()->GetIonTable();
   g4calc = G4Pow::GetInstance();
 
-  // fill vectors
-  if (nullptr == sBarkasCorr) {
+  // fill vectors — call_once guarantees exactly one Initialise() call across
+  // all threads, preventing concurrent writes to CK/CL/ZK/VL arrays and
+  // eliminating the double-free on sBarkasCorr/sThetaK/sThetaL
+  std::call_once(fCorrOnce, [this]() {
     Initialise();
-    isInitializer = true;
-  }
+    std::atexit(G4EmCorrections::CleanupStaticData);
+  });
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -130,12 +133,16 @@ G4EmCorrections::G4EmCorrections(G4int verb)
 G4EmCorrections::~G4EmCorrections()
 {
   for (G4int i=0; i<nIons; ++i) { delete stopData[i]; }
-  if (isInitializer) { 
-    delete sBarkasCorr;
-    delete sThetaK;
-    delete sThetaL;
-    sBarkasCorr = sThetaK = sThetaL = nullptr;
-  }
+  // Static vectors cleaned up by CleanupStaticData() registered via std::atexit
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+void G4EmCorrections::CleanupStaticData()
+{
+  delete sBarkasCorr; sBarkasCorr = nullptr;
+  delete sThetaK;     sThetaK     = nullptr;
+  delete sThetaL;     sThetaL     = nullptr;
 }
 
 void G4EmCorrections::SetupKinematics(const G4ParticleDefinition* p,

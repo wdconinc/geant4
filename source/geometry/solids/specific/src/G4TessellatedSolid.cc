@@ -2003,9 +2003,15 @@ G4Polyhedron* G4TessellatedSolid::GetPolyhedron() const
       fpPolyhedron->GetNumberOfRotationSteps())
   {
     G4AutoLock l(&polyhedronMutex);
-    delete fpPolyhedron;
-    fpPolyhedron = CreatePolyhedron();
-    fRebuildPolyhedron = false;
+    if (fpPolyhedron == nullptr ||
+        fRebuildPolyhedron ||
+        fpPolyhedron->GetNumberOfRotationStepsAtTimeOfCreation() !=
+        fpPolyhedron->GetNumberOfRotationSteps())
+    {
+      delete fpPolyhedron;
+      fpPolyhedron = CreatePolyhedron();
+      fRebuildPolyhedron = false;
+    }
     l.unlock();
   }
   return fpPolyhedron;

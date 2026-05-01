@@ -57,6 +57,7 @@
 #include "G4ionEffectiveCharge.hh"
 #include "G4Material.hh"
 #include "G4ParticleDefinition.hh"
+#include <mutex>
 
 class G4VEmModel;
 class G4PhysicsVector;
@@ -238,7 +239,9 @@ private:
   G4int currentZ = 0;
 
   G4int verbose;
-  G4bool isInitializer = false;
+
+  static std::once_flag fCorrOnce;
+  static void CleanupStaticData();
 
   std::vector<G4int> Zion;
   std::vector<G4int> Aion;

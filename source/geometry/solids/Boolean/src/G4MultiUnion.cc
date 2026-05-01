@@ -1009,9 +1009,15 @@ G4Polyhedron* G4MultiUnion::GetPolyhedron() const
       fpPolyhedron->GetNumberOfRotationSteps())
   {
     G4AutoLock l(&munionMutex);
-    delete fpPolyhedron;
-    fpPolyhedron = CreatePolyhedron();
-    fRebuildPolyhedron = false;
+    if (fpPolyhedron == nullptr ||
+        fRebuildPolyhedron ||
+        fpPolyhedron->GetNumberOfRotationStepsAtTimeOfCreation() !=
+        fpPolyhedron->GetNumberOfRotationSteps())
+    {
+      delete fpPolyhedron;
+      fpPolyhedron = CreatePolyhedron();
+      fRebuildPolyhedron = false;
+    }
     l.unlock();
   }
   return fpPolyhedron;

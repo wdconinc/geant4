@@ -38,6 +38,12 @@
 
 #include "G4VGraphicsScene.hh"
 #include "G4Polyhedron.hh"
+#include "G4AutoLock.hh"
+
+namespace
+{
+  G4Mutex polyhedronMutex = G4MUTEX_INITIALIZER;
+}
 
 ////////////////////////////////////////////////////////////////
 //
@@ -571,8 +577,16 @@ G4Polyhedron* G4DisplacedSolid::GetPolyhedron () const
       fpPolyhedron->GetNumberOfRotationStepsAtTimeOfCreation() !=
       fpPolyhedron->GetNumberOfRotationSteps())
     {
-      fpPolyhedron = CreatePolyhedron();
-      fRebuildPolyhedron = false;
+      G4AutoLock l(&polyhedronMutex);
+      if (fpPolyhedron == nullptr ||
+          fRebuildPolyhedron ||
+          fpPolyhedron->GetNumberOfRotationStepsAtTimeOfCreation() !=
+          fpPolyhedron->GetNumberOfRotationSteps())
+        {
+          delete fpPolyhedron;
+          fpPolyhedron = CreatePolyhedron();
+          fRebuildPolyhedron = false;
+        }
     }
   return fpPolyhedron;
 }

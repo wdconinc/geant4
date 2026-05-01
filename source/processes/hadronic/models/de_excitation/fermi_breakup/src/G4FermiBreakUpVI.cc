@@ -39,8 +39,10 @@
 #include "G4PhysicsModelCatalog.hh"
 #include "Randomize.hh"
 #include "G4RandomDirection.hh"
+#include "G4AutoLock.hh"
 
 G4FermiFragmentsPoolVI* G4FermiBreakUpVI::fPool = nullptr;
+namespace { G4Mutex fPoolMutex = G4MUTEX_INITIALIZER; }
 
 G4FermiBreakUpVI::G4FermiBreakUpVI()
 {
@@ -49,9 +51,13 @@ G4FermiBreakUpVI::G4FermiBreakUpVI()
   secID = G4PhysicsModelCatalog::GetModelID("model_G4FermiBreakUpVI");
   prob.resize(12,0.0);
   if (nullptr == fPool) {
-    fPool = new G4FermiFragmentsPoolVI();
-    fPool->Initialise();
-    isFirst = true;
+    G4AutoLock lock(&fPoolMutex);
+    if (nullptr == fPool) {
+      auto* p = new G4FermiFragmentsPoolVI();
+      p->Initialise();
+      fPool = p;
+      isFirst = true;
+    }
   }
 }
 

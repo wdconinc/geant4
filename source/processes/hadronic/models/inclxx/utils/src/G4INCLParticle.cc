@@ -47,12 +47,7 @@
 
 namespace G4INCL {
 
-#ifdef INCLXX_IN_GEANT4_MODE
-    std::vector<G4double> Particle::INCLBiasVector;
-#else
     G4ThreadLocal std::vector<G4double> Particle::INCLBiasVector;
-  //G4VectorCache<G4double> Particle::INCLBiasVector;
-#endif
     G4ThreadLocal long Particle::nextID = 1;
   G4ThreadLocal G4int Particle::nextBiasedCollisionID = 0;
 

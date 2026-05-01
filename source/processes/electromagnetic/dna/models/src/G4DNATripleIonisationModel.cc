@@ -199,7 +199,7 @@ G4double G4DNATripleIonisationModel::CrossSectionPerVolume(
     return 0.0;
   }
 
-  static G4double water_dens = (*water_density_)[material->GetIndex()];
+  const G4double water_dens = (*water_density_)[material->GetIndex()];
 
   const auto& pname = pdef->GetParticleName();
 

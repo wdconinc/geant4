@@ -73,6 +73,7 @@
 #include "G4TransportationManager.hh"
 #include "G4UnitsTable.hh"
 
+#include <atomic>
 #include <memory>
 
 class G4VSensitiveDetector;
@@ -513,11 +514,12 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
      G4double  startEnergy= track.GetKineticEnergy();
      G4double  endEnergy= State(fTransportEndKineticEnergy);
 
-     static G4int no_inexact_steps=0, no_large_ediff;
+     static std::atomic<G4int> no_inexact_steps{0};
+     static std::atomic<G4int> no_large_ediff{0};
      G4double absEdiff = std::fabs(startEnergy- endEnergy);
      if( absEdiff > perMillion * endEnergy )
      {
-     no_inexact_steps++;
+     no_inexact_steps.fetch_add(1, std::memory_order_relaxed);
      // Possible statistics keeping here ...
      }
      #ifdef G4VERBOSE
@@ -525,11 +527,14 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
      {
      if( std::fabs(startEnergy- endEnergy) > perThousand * endEnergy )
      {
-     static G4int no_warnings= 0, warnModulo=1,  moduloFactor= 10;
-     no_large_ediff ++;
-     if( (no_large_ediff% warnModulo) == 0 )
+     static std::atomic<G4int> no_warnings{0};
+     static std::atomic<G4int> warnModulo{1};
+     static constexpr G4int    moduloFactor = 10;
+     G4int current_ediff = no_large_ediff.fetch_add(1, std::memory_order_relaxed) + 1;
+     G4int current_modulo = warnModulo.load(std::memory_order_relaxed);
+     if( (current_ediff % current_modulo) == 0 )
      {
-     no_warnings++;
+     G4int nw = no_warnings.fetch_add(1, std::memory_order_relaxed) + 1;
      G4cout << "WARNING - G4Transportation::AlongStepGetPIL() "
      << "   Energy change in Step is above 1^-3 relative value. " << G4endl
      << "   Relative change in 'tracking' step = "
@@ -540,8 +545,8 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
      << G4endl;
      G4cout << " Energy has been corrected -- however, review"
      << " field propagation parameters for accuracy."  << G4endl;
-     if( (fVerboseLevel > 2 ) || (no_warnings<4) ||
-         (no_large_ediff == warnModulo * moduloFactor) )
+     if( (fVerboseLevel > 2 ) || (nw<4) ||
+         (current_ediff == current_modulo * moduloFactor) )
      {
      G4cout << " These include EpsilonStepMax(/Min) in G4FieldManager "
      << " which determine fractional error per step for integrated quantities. "
@@ -553,10 +558,11 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
      << "        Bad 'endpoint'. Energy change detected"
      << " and corrected. "
      << " Has occurred already "
-     << no_large_ediff << " times." << G4endl;
-     if( no_large_ediff == warnModulo * moduloFactor )
+     << current_ediff << " times." << G4endl;
+     if( current_ediff == current_modulo * moduloFactor )
      {
-     warnModulo *= moduloFactor;
+     warnModulo.compare_exchange_strong(current_modulo,
+         current_modulo * moduloFactor, std::memory_order_relaxed);
      }
      }
      }

@@ -25,6 +25,7 @@
 //
 
 #include "globals.hh"
+#include "G4AutoLock.hh"
 #include "G4XAnnihilationChannel.hh"
 #include "G4ConcreteMesonBaryonToResonance.hh"
 
@@ -32,9 +33,7 @@ G4BaryonWidth*           G4ConcreteMesonBaryonToResonance::baryonWidth = nullptr
 G4BaryonPartialWidth*    G4ConcreteMesonBaryonToResonance::baryonPartialWidth = nullptr;
 G4ParticleTypeConverter* G4ConcreteMesonBaryonToResonance::particleTypeConverter = nullptr;
 
-#ifdef G4MULTITHREADED
 G4Mutex G4ConcreteMesonBaryonToResonance::concreteMesonBaryonToResonanceMutex = G4MUTEX_INITIALIZER;
-#endif
 
 G4BaryonWidth & G4ConcreteMesonBaryonToResonance::theBaryonWidth()
 {
@@ -75,17 +74,12 @@ G4ConcreteMesonBaryonToResonance::~G4ConcreteMesonBaryonToResonance()
 void G4ConcreteMesonBaryonToResonance::InitialisePointers()
 {
   if(!baryonWidth) {
-#ifdef G4MULTITHREADED
-    G4MUTEXLOCK(&concreteMesonBaryonToResonanceMutex);
-    if (!baryonWidth)  { 
-#endif
+    G4AutoLock lock(&concreteMesonBaryonToResonanceMutex);
+    if (!baryonWidth) {
       baryonWidth = new G4BaryonWidth();
       baryonPartialWidth = new G4BaryonPartialWidth();
       particleTypeConverter = new G4ParticleTypeConverter(); 
-#ifdef G4MULTITHREADED
     }
-    G4MUTEXUNLOCK(&concreteMesonBaryonToResonanceMutex);
-#endif
   }
 }
 

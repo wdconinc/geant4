@@ -40,6 +40,7 @@
 #include "G4BarashenkovData.hh"
 #include "G4IsotopeList.hh"
 #include "G4HadronXSDataTable.hh"
+#include "G4AutoLock.hh"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -48,6 +49,7 @@ G4int G4ComponentBarNucleonNucleusXsc::theZ[] =
 {2,4,6,7,8,11,13,14,20,26,29,42,48,50,74,82,92};
 std::vector<G4PiData*>* G4ComponentBarNucleonNucleusXsc::thePData = nullptr;
 std::vector<G4PiData*>* G4ComponentBarNucleonNucleusXsc::theNData = nullptr;
+namespace { G4Mutex sDataMutex = G4MUTEX_INITIALIZER; }
 
 G4ComponentBarNucleonNucleusXsc::G4ComponentBarNucleonNucleusXsc()
  : G4VComponentCrossSection("BarashenkovNucleonNucleusXsc")
@@ -55,7 +57,10 @@ G4ComponentBarNucleonNucleusXsc::G4ComponentBarNucleonNucleusXsc()
   theNeutron = G4Neutron::Neutron();
   theProton  = G4Proton::Proton();
   if (nullptr == thePData) {
-    LoadData();
+    G4AutoLock lock(&sDataMutex);
+    if (nullptr == thePData) {
+      LoadData();
+    }
   }
 }
 

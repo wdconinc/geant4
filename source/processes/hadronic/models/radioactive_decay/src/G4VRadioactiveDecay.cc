@@ -148,10 +148,16 @@ G4VRadioactiveDecay::G4VRadioactiveDecay(const G4String& processName,
 
   // Instantiate the map of decay tables
   if (nullptr == master_dkmap) {
-    master_dkmap = new DecayTableMap();
+    G4AutoLock lk(&radioactiveDecayMutex);
+    if (nullptr == master_dkmap) {
+      master_dkmap = new DecayTableMap();
+    }
   }
   if (nullptr == theUserRDataFiles) {
-    theUserRDataFiles = new std::map<G4int, G4String>;
+    G4AutoLock lk(&radioactiveDecayMutex);
+    if (nullptr == theUserRDataFiles) {
+      theUserRDataFiles = new std::map<G4int, G4String>;
+    }
   }
  
   // RDM applies to all logical volumes by default

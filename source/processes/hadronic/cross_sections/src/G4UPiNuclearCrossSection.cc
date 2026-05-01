@@ -43,6 +43,7 @@
 #include "G4PhysicsTable.hh"
 #include "G4NistManager.hh"
 #include "G4HadronXSDataTable.hh"
+#include "G4AutoLock.hh"
 
 G4int G4UPiNuclearCrossSection::theZ[NZ] = 
 {2,4,6,7,8,11,13,20,26,29,42,48,50,74,82,92};
@@ -55,6 +56,10 @@ G4PhysicsTable* G4UPiNuclearCrossSection::piPlusInelastic = nullptr;
 G4PhysicsTable* G4UPiNuclearCrossSection::piMinusElastic = nullptr;
 G4PhysicsTable* G4UPiNuclearCrossSection::piMinusInelastic = nullptr;
 
+namespace {
+  G4Mutex piXSMutex = G4MUTEX_INITIALIZER;
+}
+
 G4UPiNuclearCrossSection::G4UPiNuclearCrossSection()
  : G4VCrossSectionDataSet("G4UPiNuclearCrossSection")
 {
@@ -62,7 +67,10 @@ G4UPiNuclearCrossSection::G4UPiNuclearCrossSection()
   piMinus = G4PionMinus::PionMinus();
   elow = 20.0*CLHEP::MeV;
 
-  if (idxZ[0] == 0) { LoadData(); }
+  if (idxZ[0] == 0) {
+    G4AutoLock lk(&piXSMutex);
+    if (idxZ[0] == 0) { LoadData(); }
+  }
 }
 
 G4bool 

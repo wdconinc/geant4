@@ -102,6 +102,7 @@
 // 20150506  M. Kelsey -- Call Initialize() in ctor for master thread only
 // 20150608  M. Kelsey -- Label all while loops as terminating.
 
+#include <atomic>
 #include <cmath>
 #include <iostream>
 
@@ -270,9 +271,9 @@ G4CascadeInterface::ApplyYourself(const G4HadProjectile& aTrack,
   }
 
 #ifdef G4CASCADE_DEBUG_INTERFACE
-  static G4int counter(0);
-  counter++;
-  G4cerr << "Reaction number "<< counter << " "
+  static std::atomic<G4int> counter{0};
+  G4int rxn = counter.fetch_add(1, std::memory_order_relaxed) + 1;
+  G4cerr << "Reaction number " << rxn << " "
 	 << aTrack.GetDefinition()->GetParticleName() << " "
 	 << aTrack.GetKineticEnergy() << " MeV" << G4endl;
 #endif

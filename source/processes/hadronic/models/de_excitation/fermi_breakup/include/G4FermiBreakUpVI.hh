@@ -36,6 +36,7 @@
 #include "G4FermiFragment.hh"
 #include "G4ThreeVector.hh"
 #include "G4LorentzVector.hh"
+#include "G4Threading.hh"
 #include <vector>
 
 class G4FermiFragmentsPoolVI;
@@ -78,7 +79,7 @@ private:
   G4double fElim{0.0};
   G4double fTimeLim{1.0}; // in ns
 
-  G4bool isFirst{false};
+  // isFirst removed: ownership transferred to static DCLP guard in .cc
 
   std::vector<G4double> prob;
   std::vector<const G4FermiFragment*> frag;

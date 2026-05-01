@@ -37,10 +37,15 @@
 #include "G4NuclearLevelData.hh"
 #include "G4DeexPrecoParameters.hh"
 #include "G4PhysicsModelCatalog.hh"
+#include "G4AutoLock.hh"
 #include "Randomize.hh"
 #include "G4RandomDirection.hh"
 
 G4FermiFragmentsPoolVI* G4FermiBreakUpVI::fPool = nullptr;
+
+namespace {
+  G4Mutex fermiPoolMutex = G4MUTEX_INITIALIZER;
+}
 
 G4FermiBreakUpVI::G4FermiBreakUpVI()
 {
@@ -48,19 +53,18 @@ G4FermiBreakUpVI::G4FermiBreakUpVI()
   lvect.reserve(10);
   secID = G4PhysicsModelCatalog::GetModelID("model_G4FermiBreakUpVI");
   prob.resize(12,0.0);
-  if (nullptr == fPool) {
-    fPool = new G4FermiFragmentsPoolVI();
-    fPool->Initialise();
-    isFirst = true;
+  if (nullptr == fPool) {                    // outer check (no lock)
+    G4AutoLock lock(&fermiPoolMutex);
+    if (nullptr == fPool) {                  // DCLP inner check
+      fPool = new G4FermiFragmentsPoolVI();
+      fPool->Initialise();
+    }
   }
 }
 
 G4FermiBreakUpVI::~G4FermiBreakUpVI()
 {
-  if (isFirst) { 
-    delete fPool;
-    fPool = nullptr;
-  }
+  // fPool is static and lives for the process lifetime; no per-instance delete.
 }
 
 void G4FermiBreakUpVI::Initialise()

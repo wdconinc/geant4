@@ -35,6 +35,7 @@
 #include "G4VEmModel.hh"
 #include "G4VSIntegration.hh"
 #include "G4ParticleChangeForGamma.hh"
+#include "G4Threading.hh"
 
 #include "G4DNAWaterIonisationStructure.hh"
 #include <vector>
@@ -165,7 +166,8 @@ private:
   G4int verbose{0};
   std::size_t idx{0};
 
-  G4bool isFirst{false};
+  // isFirst removed: ownership transferred to static DCLP guard in .cc
+
   G4bool isInitialised{false};
   G4bool isIon{false};
   G4bool isHelium{false};

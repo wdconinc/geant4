@@ -51,6 +51,7 @@
 #include "G4VCrossSectionDataSet.hh"
 
 #include <map>
+#include <mutex>
 #include <vector>
 
 class G4ParticleHPThermalScatteringData : public G4VCrossSectionDataSet
@@ -114,6 +115,7 @@ class G4ParticleHPThermalScatteringData : public G4VCrossSectionDataSet
     static G4ParticleHPThermalScatteringNames* names;
     static std::vector<G4int>* indexOfThermalElement;
     static std::map<std::pair<const G4Material*, const G4Element*>, G4int>* dic;
+    static std::once_flag fNamesOnce;
 };
 
 #endif

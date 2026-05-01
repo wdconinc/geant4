@@ -44,6 +44,7 @@
 G4ParticleHPThermalScatteringNames* G4ParticleHPThermalScatteringData::names = nullptr;
 std::vector<G4int>* G4ParticleHPThermalScatteringData::indexOfThermalElement = nullptr;
 std::map<std::pair<const G4Material*, const G4Element*>, G4int>* G4ParticleHPThermalScatteringData::dic = nullptr;
+std::once_flag G4ParticleHPThermalScatteringData::fNamesOnce;
 
 G4ParticleHPThermalScatteringData::G4ParticleHPThermalScatteringData()
   : G4VCrossSectionDataSet("NeutronHPThermalScatteringData")
@@ -58,7 +59,7 @@ G4ParticleHPThermalScatteringData::G4ParticleHPThermalScatteringData()
   element_cache = nullptr;
   material_cache = nullptr;
 
-  if (nullptr == names) {
+  std::call_once(fNamesOnce, [this]() {
     isInitializer = true;
     indexOfThermalElement = new std::vector<G4int>;
     names = new G4ParticleHPThermalScatteringNames();
@@ -72,7 +73,7 @@ G4ParticleHPThermalScatteringData::G4ParticleHPThermalScatteringData()
     hpmanager->RegisterThermalScatteringCoherentCrossSections(coherent);
     hpmanager->RegisterThermalScatteringIncoherentCrossSections(incoherent);
     hpmanager->RegisterThermalScatteringInelasticCrossSections(inelastic);
-  }
+  });
 }
 
 G4ParticleHPThermalScatteringData::~G4ParticleHPThermalScatteringData()
@@ -170,7 +171,7 @@ void G4ParticleHPThermalScatteringData::BuildPhysicsTable(const G4ParticleDefini
   inelastic = hpmanager->GetThermalScatteringInelasticCrossSections();
 
   // The initialisation is performed only in the master thread
-  if (!isInitializer)
+  if (!G4Threading::IsMasterThread())
     return;
 
   std::map<G4String, G4int> co_dic;

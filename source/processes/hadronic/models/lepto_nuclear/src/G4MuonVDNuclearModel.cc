@@ -35,6 +35,7 @@
 //
 
 #include "G4MuonVDNuclearModel.hh"
+#include "G4AutoLock.hh"
 
 #include "Randomize.hh"
 #include "G4Log.hh"
@@ -67,7 +68,11 @@ const G4double G4MuonVDNuclearModel::tdat[] = {
   1.e9,2.e9,3.e9,4.e9,5.e9,6.e9,7.e9,8.e9,9.e9, 
   1.e10,2.e10,3.e10,4.e10,5.e10,6.e10,7.e10,8.e10,9.e10,1.e11}; 
 
-G4ElementData* G4MuonVDNuclearModel::fElementData = nullptr;             
+G4ElementData* G4MuonVDNuclearModel::fElementData = nullptr;
+
+namespace {
+  G4Mutex fElementDataMutex = G4MUTEX_INITIALIZER;
+}
 
 G4MuonVDNuclearModel::G4MuonVDNuclearModel()
   : G4HadronicInteraction("G4MuonVDNuclearModel")
@@ -79,9 +84,12 @@ G4MuonVDNuclearModel::G4MuonVDNuclearModel()
   SetMaxEnergy(1*CLHEP::PeV);
   CutFixed = 0.2*CLHEP::GeV;
 
-  if (nullptr == fElementData) { 
-    fElementData = new G4ElementData(93);
-    MakeSamplingTable();
+  if (nullptr == fElementData) {
+    G4AutoLock lk(&fElementDataMutex);
+    if (nullptr == fElementData) {
+      fElementData = new G4ElementData(93);
+      MakeSamplingTable();
+    }
   }
                     
   // reuse existing pre-compound model

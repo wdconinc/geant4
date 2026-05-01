@@ -73,6 +73,7 @@ namespace
   const G4double eTransitionBound = 150.*CLHEP::MeV;
   // A limit energy to correct CHIPS parameterisation for light isotopes 
   const G4double ehigh = 10*CLHEP::GeV;
+  G4Mutex sDataMutex = G4MUTEX_INITIALIZER;
 }
 
 G4GammaNuclearXS::G4GammaNuclearXS() 
@@ -92,10 +93,13 @@ G4GammaNuclearXS::G4GammaNuclearXS()
 
   // full data set is uploaded once
   if (nullptr == data) { 
-    data = new G4ElementData(MAXZGAMMAXS);
-    data->SetName("gNuclear");
-    for (G4int Z=1; Z<MAXZGAMMAXS; ++Z) {
-      Initialise(Z);
+    G4AutoLock lock(&sDataMutex);
+    if (nullptr == data) {
+      data = new G4ElementData(MAXZGAMMAXS);
+      data->SetName("gNuclear");
+      for (G4int Z=1; Z<MAXZGAMMAXS; ++Z) {
+        Initialise(Z);
+      }
     }
   }
 }

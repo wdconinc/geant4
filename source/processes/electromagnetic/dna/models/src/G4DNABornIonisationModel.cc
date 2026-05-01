@@ -39,6 +39,7 @@
 #include "G4DNASamplingTable.hh"
 #include "G4LogLogInterpolation.hh"
 #include "G4DeltaAngle.hh"
+#include "G4AutoLock.hh"
 #include "G4Log.hh"
 #include "G4Exp.hh"
 #include "G4Electron.hh"
@@ -56,6 +57,7 @@ namespace
 {
   G4double scaleFactor = (1.e-22 / 3.343) * CLHEP::m*CLHEP::m;
   G4double tolerance = 10*CLHEP::eV;
+  G4Mutex bornDataMutex = G4MUTEX_INITIALIZER;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -71,9 +73,11 @@ G4DNABornIonisationModel::G4DNABornIonisationModel(const G4ParticleDefinition*,
 
   fasterCode = G4EmParameters::Instance()->DNAFast();
   
-  if (nullptr == xsdata_p) {
-    isFirst = true;
-    LoadData();
+  if (nullptr == xsdata_p) {             // outer check (no lock)
+    G4AutoLock lock(&bornDataMutex);
+    if (nullptr == xsdata_p) {           // DCLP inner check
+      LoadData();
+    }
   }
 }
 
@@ -81,16 +85,8 @@ G4DNABornIonisationModel::G4DNABornIonisationModel(const G4ParticleDefinition*,
 
 G4DNABornIonisationModel::~G4DNABornIonisationModel()
 {
-  if (isFirst) {
-    delete xsdata_e;
-    xsdata_e = nullptr;
-    delete xsdata_p;
-    xsdata_p = nullptr;
-    delete sampling_e;
-    sampling_e = nullptr;
-    delete sampling_p;
-    sampling_p = nullptr;
-  }
+  // Static data (xsdata_e/p, sampling_e/p) live for the process lifetime;
+  // no per-instance delete needed.
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

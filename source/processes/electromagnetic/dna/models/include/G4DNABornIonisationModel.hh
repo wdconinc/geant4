@@ -36,6 +36,7 @@
 #include "G4VSIntegration.hh"
 #include "G4ParticleChangeForGamma.hh"
 #include "G4DNAWaterIonisationStructure.hh"
+#include "G4Threading.hh"
 
 class G4DNAChemistryManager;
 class G4VAtomDeexcitation;
@@ -131,7 +132,8 @@ private:
   G4int fSelectedShell{0};
   G4int verbose{0};
 
-  G4bool isFirst{false};
+  // isFirst removed: ownership transferred to static DCLP guard in .cc
+
   G4bool isInitialised{false};
   G4bool isElectron{false};
   G4bool fasterCode{false};

@@ -41,7 +41,7 @@
 #  include <unistd.h>
 #endif
 
-#include "detail/G4TrackEvent.perfetto.hh"
+#include "detail/G4ProfilingCategories.perfetto.hh"
 
 namespace
 {
@@ -80,7 +80,7 @@ int OpenTraceFile(std::string const& filename)
 #if defined(_WIN32)
   return _open(filename.c_str(), _O_BINARY | _O_RDWR | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
 #else
-  return open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0660);
+  return open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0600);
 #endif
 }
 

@@ -22,7 +22,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// G4TrackEvent.perfetto.hh
+// G4ProfilingCategories.perfetto.hh
 // --------------------------------------------------------------------
 
 #pragma once

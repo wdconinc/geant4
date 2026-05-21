@@ -11,7 +11,7 @@ geant4_add_module(G4profiling
     G4Profiling/G4ProfilingManager.hh
     G4Profiling/G4ProfilingMessenger.hh
   PRIVATE_HEADERS
-    ${CMAKE_CURRENT_LIST_DIR}/src/detail/G4TrackEvent.perfetto.hh
+    ${CMAKE_CURRENT_LIST_DIR}/src/detail/G4ProfilingCategories.perfetto.hh
   SOURCES
     G4ProfilingManager.cc
     G4ProfilingMessenger.cc)

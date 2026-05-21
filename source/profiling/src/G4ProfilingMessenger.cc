@@ -40,11 +40,11 @@ G4ProfilingMessenger::G4ProfilingMessenger(G4ProfilingManager* manager)
   profilingDirectory_->SetGuidance("Geant4 profiling control commands.");
 
   verboseCmd_ = new G4UIcmdWithAnInteger("/profiling/verbose", this);
-  verboseCmd_->SetGuidance("Set profiling verbosity.");
-  verboseCmd_->SetGuidance(" 0 : run and event spans");
-  verboseCmd_->SetGuidance(" 1 : add track spans");
-  verboseCmd_->SetGuidance(" 2 : add step spans");
-  verboseCmd_->SetGuidance(" 3 : add process and navigation spans");
+  verboseCmd_->SetGuidance("Set profiling verbosity (cumulative).");
+  verboseCmd_->SetGuidance(" 0 : run-level and event-level spans only (kCoarse)");
+  verboseCmd_->SetGuidance(" 1 : adds track-level spans (kNormal)");
+  verboseCmd_->SetGuidance(" 2 : adds step-level spans (kFine)");
+  verboseCmd_->SetGuidance(" 3 : adds process and navigation spans (kVerbose)");
   verboseCmd_->SetParameterName("level", false);
   verboseCmd_->SetRange("level>=0 && level<=3");
   verboseCmd_->AvailableForStates(G4State_PreInit, G4State_Idle);

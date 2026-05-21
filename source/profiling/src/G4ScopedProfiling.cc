@@ -31,7 +31,7 @@
 
 #include <perfetto.h>
 
-#include "detail/G4TrackEvent.perfetto.hh"
+#include "detail/G4ProfilingCategories.perfetto.hh"
 
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 

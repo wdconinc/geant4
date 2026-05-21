@@ -43,7 +43,7 @@ G4ProfilingManager& G4ProfilingManager::GetInstance()
 }
 
 G4ProfilingManager::G4ProfilingManager()
-  : outputFileName_("geant4.perfetto-trace")
+  : outputFileName_("geant4.pftrace")
   , messenger_(std::make_unique<G4ProfilingMessenger>(this))
 {}
 

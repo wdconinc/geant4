@@ -80,26 +80,30 @@ bool G4ScopedProfiling::Activate(G4ScopedProfilingInput const& input)
     return false;
   }
 
+  using namespace G4Profiling::detail;
   bool activated = false;
 
+  // Begin a perfetto track event for the matching category.
+  // The "track_id" argument carries event-specific payload (e.g., event number,
+  // track ID) and "display_color" carries an ARGB color for the trace viewer.
 #define G4_TRACE_EVENT_BEGIN_IF(category_name)                                 \
   if (!activated && category_ == category_name)                                \
   {                                                                            \
     TRACE_EVENT_BEGIN(category_name,                                           \
                       perfetto::DynamicString{input.name},                     \
-                      "payload",                                              \
+                      "track_id",                                              \
                       static_cast<std::uint64_t>(input.payload),               \
-                      "color",                                                \
+                      "display_color",                                         \
                       static_cast<std::uint32_t>(input.color));                \
     activated = true;                                                          \
   }
 
-  G4_TRACE_EVENT_BEGIN_IF(G4Profiling::detail::g4run_category)
-  G4_TRACE_EVENT_BEGIN_IF(G4Profiling::detail::g4event_category)
-  G4_TRACE_EVENT_BEGIN_IF(G4Profiling::detail::g4track_category)
-  G4_TRACE_EVENT_BEGIN_IF(G4Profiling::detail::g4step_category)
-  G4_TRACE_EVENT_BEGIN_IF(G4Profiling::detail::g4process_category)
-  G4_TRACE_EVENT_BEGIN_IF(G4Profiling::detail::g4navigation_category)
+  G4_TRACE_EVENT_BEGIN_IF(g4run_category)
+  G4_TRACE_EVENT_BEGIN_IF(g4event_category)
+  G4_TRACE_EVENT_BEGIN_IF(g4track_category)
+  G4_TRACE_EVENT_BEGIN_IF(g4step_category)
+  G4_TRACE_EVENT_BEGIN_IF(g4process_category)
+  G4_TRACE_EVENT_BEGIN_IF(g4navigation_category)
 
 #undef G4_TRACE_EVENT_BEGIN_IF
 
@@ -108,18 +112,31 @@ bool G4ScopedProfiling::Activate(G4ScopedProfilingInput const& input)
 
 void G4ScopedProfiling::Deactivate() noexcept
 {
-#define G4_TRACE_EVENT_END_IF(category_name)                                   \
-  if (category_ == category_name)                                              \
-  {                                                                            \
-    TRACE_EVENT_END(category_name);                                            \
+  using namespace G4Profiling::detail;
+
+  // End the perfetto track event for the stored category pointer.
+  if (category_ == g4run_category)
+  {
+    TRACE_EVENT_END(g4run_category);
   }
-
-  G4_TRACE_EVENT_END_IF(G4Profiling::detail::g4run_category)
-  else G4_TRACE_EVENT_END_IF(G4Profiling::detail::g4event_category)
-  else G4_TRACE_EVENT_END_IF(G4Profiling::detail::g4track_category)
-  else G4_TRACE_EVENT_END_IF(G4Profiling::detail::g4step_category)
-  else G4_TRACE_EVENT_END_IF(G4Profiling::detail::g4process_category)
-  else G4_TRACE_EVENT_END_IF(G4Profiling::detail::g4navigation_category)
-
-#undef G4_TRACE_EVENT_END_IF
+  else if (category_ == g4event_category)
+  {
+    TRACE_EVENT_END(g4event_category);
+  }
+  else if (category_ == g4track_category)
+  {
+    TRACE_EVENT_END(g4track_category);
+  }
+  else if (category_ == g4step_category)
+  {
+    TRACE_EVENT_END(g4step_category);
+  }
+  else if (category_ == g4process_category)
+  {
+    TRACE_EVENT_END(g4process_category);
+  }
+  else if (category_ == g4navigation_category)
+  {
+    TRACE_EVENT_END(g4navigation_category);
+  }
 }

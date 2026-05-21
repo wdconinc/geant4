@@ -60,6 +60,8 @@ perfetto::TraceConfig ConfigureSession()
   trackEventConfig.add_enabled_categories(G4Profiling::detail::g4navigation_category);
 
   perfetto::TraceConfig config;
+  // 8 MB ring buffer is a reasonable default for moderate-length runs.
+  // Increase for long runs or high-verbosity profiles to avoid buffer wrap.
   config.add_buffers()->set_size_kb(8 * 1024);
   auto* dataSource = config.add_data_sources()->mutable_config();
   dataSource->set_name("track_event");

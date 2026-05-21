@@ -53,7 +53,8 @@ G4ProfilingMessenger::G4ProfilingMessenger(G4ProfilingManager* manager)
   perfettoDirectory_->SetGuidance("Perfetto backend control commands.");
 
   outputFileCmd_ = new G4UIcmdWithAString("/profiling/perfetto/outputFile", this);
-  outputFileCmd_->SetGuidance("Set the output trace file.");
+  outputFileCmd_->SetGuidance("Set the output trace file (default: geant4.pftrace).");
+  outputFileCmd_->SetGuidance("Use a .pftrace extension for compatibility with ui.perfetto.dev.");
   outputFileCmd_->SetParameterName("filename", false);
   outputFileCmd_->AvailableForStates(G4State_PreInit, G4State_Idle);
 
